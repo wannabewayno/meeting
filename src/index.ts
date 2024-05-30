@@ -1,4 +1,7 @@
-import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
+import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginManifest, PluginSettingTab, Setting } from 'obsidian';
+import Actional from './Actions/Action'
+import Modalal from './Components/Modal';
+import Component from './Components/Component';
 
 // Remember to rename these classes and interfaces!
 
@@ -12,6 +15,17 @@ const DEFAULT_SETTINGS: MyPluginSettings = {
 
 export default class MyPlugin extends Plugin {
 	settings: MyPluginSettings;
+  modal: any;
+
+  constructor(app: App, manifest: PluginManifest) {
+    super(app, manifest);
+
+    const Action = Actional(app);
+    this.modal = Modalal(app);
+    console.log(Action);
+    Action.fromId('daily-notes');
+    // Action.fromId('')
+  }
 
 	async onload() {
 		await this.loadSettings();
@@ -19,6 +33,7 @@ export default class MyPlugin extends Plugin {
 		// This creates an icon in the left ribbon.
 		const ribbonIconEl = this.addRibbonIcon('dice', 'Sample Plugin', (evt: MouseEvent) => {
 			// Called when the user clicks the icon.
+      this.modal.Open(Component);
 			new Notice('This is a notice!');
 		});
 		// Perform additional things with the ribbon
@@ -70,9 +85,9 @@ export default class MyPlugin extends Plugin {
 
 		// If the plugin hooks up any global DOM events (on parts of the app that doesn't belong to this plugin)
 		// Using this function will automatically remove the event listener when this plugin is disabled.
-		this.registerDomEvent(document, 'click', (evt: MouseEvent) => {
-			console.log('click', evt);
-		});
+		// this.registerDomEvent(document, 'click', (evt: MouseEvent) => {
+		// 	console.log('click', evt);
+		// });
 
 		// When registering intervals, this function will automatically clear the interval when the plugin is disabled.
 		this.registerInterval(window.setInterval(() => console.log('setInterval'), 5 * 60 * 1000));
