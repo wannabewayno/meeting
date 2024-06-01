@@ -7,6 +7,92 @@ If your plugin does not need CSS, delete this file.
 
 */
 
-.my-plugin-ribbon-class {
-  color: red;
+
+.setting-item-control {
+  position: relative;
+
+  .search-input-container, input {
+    width: 100%;
+  }
+}
+
+.search-results-container {
+  position: absolute;
+  text-decoration: none;
+  list-style: none;
+  padding: 0;
+  top: 14px;
+  width: 100%;
+  border-radius: 5px;
+  border: 1px solid var(--background-modifier-border);
+  overflow: hidden;
+  z-index: 1;
+
+  &:empty {
+    border: none;
+  }
+
+  &:last-child {
+    border-bottom: 0;
+  }
+
+  .search-result {
+    border-bottom: solid 1px var(--background-modifier-border);
+    padding: 3px 5px;
+    background-color: var(--color-base-10);
+    color: var(--text-normal);
+    cursor: pointer;
+    text-align: left;
+    width: 100%;
+
+    &:hover {
+      background-color: var(--color-base-20);
+    }
+  }
+
+}
+
+
+.pill-container {
+  text-decoration: none;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+
+  .pill {
+    display: inline-block;
+    border: solid 1px var(--background-modifier-border);
+    background-color: var(--background-primary-alt);
+    color: var(--text-muted);
+    border-radius: 50px;
+    width: fit-content;
+    padding: 0px 10px;
+    margin: 0 5px 5px 0;
+
+    .pill-text {
+      margin: 0;
+    }
+  
+    .pill-image {
+      margin: 0;
+      border: 0;
+      height: 100%;
+      padding: 1px;
+      aspect-ratio: 1 / 1;
+    }
+  
+    .pill-remove {
+      border: none;
+      box-shadow: none;
+      cursor: pointer;
+      background-color: inherit;
+      padding: 0 0 0 5px;
+      color: var(--text-muted);
+
+      &:hover {
+        color: var(--color-red);
+      }
+    }
+  }
 }

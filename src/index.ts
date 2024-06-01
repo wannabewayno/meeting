@@ -2,6 +2,7 @@ import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginManifest, Plugi
 import Actional from './Actions/Action'
 import Modalal from './Components/Modal';
 import Component from './Components/Component';
+import { Vault } from './Utilities';
 
 // Remember to rename these classes and interfaces!
 
@@ -15,27 +16,47 @@ const DEFAULT_SETTINGS: MyPluginSettings = {
 
 export default class MyPlugin extends Plugin {
 	settings: MyPluginSettings;
-  modal: any;
+    modal: any;
+    vault: any;
 
   constructor(app: App, manifest: PluginManifest) {
     super(app, manifest);
 
     const Action = Actional(app);
     this.modal = Modalal(app);
-    console.log(Action);
     Action.fromId('daily-notes');
-    // Action.fromId('')
+    this.vault = Vault(app);
   }
 
 	async onload() {
 		await this.loadSettings();
 
+        // Finds all files for People...
+        // We now need to convert this to an Object that we can display and search
+        // Ideally this needs to be the path to the person
+        // If the person doesn't exist... create for them?
+
+        // TODO: Configuration Options
+          // Meeting Template Location
+          // Meeting Dir (to place notes)
+            // Dropdown
+                // Same folder as current note.
+                // Folder called "xxx" in current note.
+                // The folder mentioned below.
+          // Contact Tag (person)
+          // Contact Dir
+            // Dropdown
+                // Same folder as current note.
+                // Folder called "xxx" in current note.
+                // The folder mentioned below.
+        console.log(this.vault.getFilesWithTag("person"));
+
 		// This creates an icon in the left ribbon.
 		const ribbonIconEl = this.addRibbonIcon('dice', 'Sample Plugin', (evt: MouseEvent) => {
 			// Called when the user clicks the icon.
-      this.modal.Open(Component);
-			new Notice('This is a notice!');
-		});
+        this.modal.Open(Component);
+            new Notice('This is a notice!');
+        });
 		// Perform additional things with the ribbon
 		ribbonIconEl.addClass('my-plugin-ribbon-class');
 
