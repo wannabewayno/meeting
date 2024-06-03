@@ -1,5 +1,5 @@
 import { App, Modal as ObsidianModal } from "obsidian";
-import { IForm, Form } from "./Component";
+import { IForm, Form } from "./UIComponent";
 
 export default (app: App) => class Modal extends ObsidianModal {
   private Form: typeof Form;
