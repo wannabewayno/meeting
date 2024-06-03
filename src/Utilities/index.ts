@@ -1,6 +1,6 @@
 import { prepareFuzzySearch, FuzzyMatch } from 'obsidian';
 
-export interface Utilities {
+export interface IUtilities {
   FuzzySearch: <T>(targets: SearchableItem<T>[]) => (query: string) => FuzzyMatch<T>[];
   isSuperset: <T>(A: Set<T>, B: Set<T>) => boolean;
 }

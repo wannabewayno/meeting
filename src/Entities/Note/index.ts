@@ -5,6 +5,7 @@ export interface INote {
   path: string;
   dirname: string;
   filename: string;
+  basename: string;
   filetags: Set<string>;
   hasAnyTags: (...tags: string[]) => boolean;
   hasAllTags: (...tags: string[]) => boolean;
@@ -16,12 +17,14 @@ export default () => class Note implements INote {
   readonly path: string;
   readonly dirname: string;
   readonly filename: string;
+  readonly basename: string;
   readonly filetags: Set<string>;
 
   constructor(path: string, frontmatter?: FrontMatterCache) {
     this.path = path;
     const [filename, ...dirs] = path.split('/').reverse();
     this.filename = filename;
+    this.basename = filename.replace(/\.\w+$/,'');
     this.dirname = dirs.reverse().join('/');
     this.filetags = new Set<string>();
 

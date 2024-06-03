@@ -1,4 +1,5 @@
 import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginManifest, PluginSettingTab, Setting } from 'obsidian';
+import Container, { IContainer } from './Container';
 
 // Remember to rename these classes and interfaces!
 
@@ -11,24 +12,20 @@ const DEFAULT_SETTINGS: MyPluginSettings = {
 }
 
 export default class MyPlugin extends Plugin {
-	settings: MyPluginSettings;
-    modal: any;
-    vault: any;
+	protected settings: MyPluginSettings;
+  protected container: IContainer;
 
   constructor(app: App, manifest: PluginManifest) {
     super(app, manifest);
-    // Resolve the dependency container and attach relevant things to the Plugin.
-
-    // const Action = Actional(app);
-    // this.modal = Modalal(app);
-    // Action.fromId('daily-notes');
-    // this.vault = Vault(app);Gen
   }
 
 	async onload() {
 		await this.loadSettings();
-
-
+		// TODO: Load Settings and pass this to the Container when initializing.
+		// We also need a way to Expose UI Elements.
+		this.container = Container({ App: this.app });
+		console.log("All the people!", this.container.CreateMeeting());
+		
         // TODO: Configuration Options
           // Meeting Template Location
           // Meeting Dir (to place notes)

@@ -1,4 +1,4 @@
-import { App, ButtonComponent, Setting } from "obsidian";
+import { ButtonComponent, Setting } from "obsidian";
 import { FuzzySearch } from "src/Utilities";
 
 enum FormElementType {
@@ -224,7 +224,7 @@ class BaseSearch extends Element {
 
     // If no data, there's nothing to search and no point in this form, return early.
     if (!element.data) return this;
-    const fuzzySearch = FuzzySearch(Object.values(element.data));
+    const fuzzySearch = FuzzySearch<string>(Object.values(element.data).map(name => ({ item: name, index: name})));
 
     const Pill = PillContainer(html, (text: string) => this.removeData(text));
 
