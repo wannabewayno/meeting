@@ -1,5 +1,6 @@
 import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginManifest, PluginSettingTab, Setting } from 'obsidian';
 import Container, { IContainer } from './Container';
+import { UIComponent, TestInput } from './UI/UIComponent';
 
 // Remember to rename these classes and interfaces!
 
@@ -44,7 +45,7 @@ export default class MyPlugin extends Plugin {
 		// This creates an icon in the left ribbon.
 		this.addRibbonIcon('dice', 'Sample Plugin', (evt: MouseEvent) => {
 			// Called when the user clicks the icon.
-      // this.modal.Open(Component);
+			new SampleModal(this.app).open();
       new Notice('This is a notice!');
     });
 
@@ -122,7 +123,16 @@ class SampleModal extends Modal {
 
 	onOpen() {
 		const {contentEl} = this;
-		contentEl.setText('Woah!');
+		const component = new UIComponent(contentEl)
+		component.addElement('Title', TestInput);
+		component.addElement('Agenda', TestInput);
+		console.log('INITIAL', component.getData());
+		setTimeout(() => console.log(component.getData()), 5000);
+		setTimeout(() => console.log(component.getData()), 10000);
+
+		// update(currValue => {
+		// 	return ['what'];
+		// });
 	}
 
 	onClose() {

@@ -22,8 +22,10 @@ interface FormElement {
   required?: boolean,
 }
 
+const ENTER = 'Enter';
+
 // This should know how to setup the data attribute.
-class Element {
+class UIElement {
   protected readonly setting: Setting;
   private _valid: boolean;
   private readonly required: boolean;
@@ -105,9 +107,7 @@ class Element {
   }
 }
 
-const ENTER = 'Enter';
-
-class Input extends Element {
+class Input extends UIElement {
   constructor(html: HTMLElement, data: FormData, element: FormElement) {
     if (!element.defaultValue) element.defaultValue = '';
     super(html, data, element);
@@ -118,7 +118,7 @@ class Input extends Element {
   }
 }
 
-class InputList extends Element {
+class InputList extends UIElement {
   constructor(html: HTMLElement, data: FormData, element: FormElement) {
     element.defaultValue = [];
     super(html, data, element);
@@ -197,7 +197,7 @@ function PillContainer(html: HTMLElement, onRemove: (value: string) => void) {
   return Pill;
 }
 
-class Choice extends Element {
+class Choice extends UIElement {
   constructor(html: HTMLElement, data: FormData, element: FormElement) {
     super(html, data, element);
 
@@ -206,7 +206,7 @@ class Choice extends Element {
     });
   }
 }
-class ChoiceList extends Element {
+class ChoiceList extends UIElement {
   constructor(html: HTMLElement, data: FormData, element: FormElement) {
     super(html, data, element);
 
@@ -216,7 +216,7 @@ class ChoiceList extends Element {
   }
 }
 
-class BaseSearch extends Element {
+class BaseSearch extends UIElement {
   protected currentValue?: HTMLElement;
 
   constructor(html: HTMLElement, data: FormData, element: FormElement) {
@@ -278,7 +278,7 @@ class SearchList extends BaseSearch {
 }
 
 
-const FormElementFactory = (html: HTMLElement, data: FormData) => (element: FormElement): Element => {
+const FormElementFactory = (html: HTMLElement, data: FormData) => (element: FormElement): UIElement => {
   switch(element.type) {
     case FormElementType.INPUT: return new Input(html, data, element);
     case FormElementType.INPUT_LIST: return new InputList(html, data, element);
@@ -290,9 +290,143 @@ const FormElementFactory = (html: HTMLElement, data: FormData) => (element: Form
   }
 }
 
+// This should know how to setup the data attribute.
+// Extend Setting, add Validation.
+class BaseElement<T> extends Setting {
+  private _valid: boolean;
+  private readonly required: boolean;
+  private readonly name: string;
+  private onValidateCallBack: (isValid: boolean) => void
+  protected setData: (cb: (currValue: T) => T) => void
+
+  // opts: Pick<FormElement, 'name' | 'hoverText' | 'defaultValue' | 'required'>
+  constructor(ui: UIComponent, name: string) {
+    super(ui.html);
+    this.name = name;
+    this.setData = ui.updateValue<T>(name);
+    this.onValidateCallBack = () => {};
+    this.setName(name);
+    // this.required = opts.required ?? true;
+
+    // if (opts.hoverText) this.setTooltip(opts.hoverText);
+    // if (this.required) this.setDesc("required");
+    // this.setData(() => defaultValue);
+  }
+
+  // protected setData<T>(value: T) {
+    // Call the function to get the latest data
+    // send back the new one.
+    // Validate it...
+
+    // Validate the Element.
+    // this.validate();
+  // }
+
+  // private validate() {
+  //   if (!data.length && !this.required) {
+  //     this.valid = true;
+  //     return;
+  //   }
+    
+  //   // TODO Validate functionality through custom or predefined methods
+  //   this.valid = Boolean(data.length);
+  // }
+
+  get valid() {
+    return this._valid;
+  }
+
+  private set valid(valid: boolean) {
+    if (this._valid !== valid) {
+      this._valid = valid;
+      this.onValidateCallBack(valid);
+    }
+  }
+
+  onValidate(cb: (isValid: boolean) => void) {
+    this.onValidateCallBack = cb;
+  }
+
+  onEnter(el: HTMLElement, cb: () => void) {
+    el.on('keypress', 'input', (event: KeyboardEvent) => {
+      if (event.code !== ENTER) return;
+      cb();
+    })
+  }
+}
+
+export class TestInput extends BaseElement<string> {
+  constructor(ui: UIComponent, name: string) {
+    super(ui, name);
+    this.addText(text => {
+      text.onChange(value => this.setData(() => value));
+    });
+  }
+}
+
+export class UIComponent {
+  private data: Record<string, any>;
+  readonly html: HTMLElement;
+  private elements: UIElement[];
+
+  constructor(html: HTMLElement) {
+    this.html = html;
+    this.data = {};
+    // So we can give each Element something to work with.
+    // We can also maybe set the data of the component.
+    // Should the elements manipulate the data directly? or give them a way to interact with it?
+    // We could provide an updateValue function that takes the current data and returns the new one?
+
+    // Create our Element Factory
+    // const formElementFactory = FormElementFactory(html, this.data);
+
+    // Map through elements and mount them.
+    // this.elements = Object.entries(elements).map(([name, element]) => formElementFactory({ name, ...element }));
+    // const callback = this.updateValue('helllo');
+    // this.updateValue<number>('what');
+  }
+
+  clearData() {
+    this.setData({});
+  }
+
+  setData(data: FormData) {
+    this.data = data;
+  }
+
+  getData(): FormData {
+    return this.data;
+  }
+
+  // How bout it needing the UIComponent?
+  // This is where that Factory comes in handy... OK
+  addElement(name: string, element: typeof BaseElement<string>) {
+    new TestInput(this, name);
+    return this;
+    // Mounts the Element.
+    // Adds an update data attribute.
+  }
+
+  updateValue<T = string>(name: string) {
+    return (cb: (currValue: T) => T) => {
+      const newValue = cb(this.getValue<T>(name));
+      this.setValue<T>(name, newValue)
+    };
+  }
+
+  // The Part of this is changing
+  setValue<T = string>(key: string, value: T) {
+    this.data[key] = value;
+  }
+
+  getValue<T = string>(key: string): T {
+    return this.data[key];
+  }
+}
+
+// Form can now extend UIComponent and just add a button or two.
+
 export class Form {
-  private readonly data: FormData;
-  private readonly formElements: Record<string, Element>;
   private readonly onSubmit: (data: FormData) => any;
   private submitButton: ButtonComponent;
 
