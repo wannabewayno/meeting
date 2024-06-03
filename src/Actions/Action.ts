@@ -18,7 +18,7 @@ export default (app: App) => {
 
     constructor(cb: Callback) {
       super();
-      this.action = cb;
+      this.action = cb.bind(app);
       this.preHooks = [];
       this.postHooks = [];
 
@@ -27,7 +27,7 @@ export default (app: App) => {
 
           // Run prehooks
           target.preHooks.forEach(hook => hook(...args));
-
+        
           // Run Action
           const result = target.action(...args);
 
@@ -49,7 +49,6 @@ export default (app: App) => {
     }
 
     static fromId(id: string) {
-      console.log({ Commands: app.commands?.commands });
       app.commands?.executeCommandById(id);
     }
   }

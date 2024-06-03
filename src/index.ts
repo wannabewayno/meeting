@@ -1,8 +1,4 @@
 import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginManifest, PluginSettingTab, Setting } from 'obsidian';
-import Actional from './Actions/Action'
-import Modalal from './Components/Modal';
-import Component from './Components/Component';
-import { Vault } from './Utilities';
 
 // Remember to rename these classes and interfaces!
 
@@ -21,20 +17,17 @@ export default class MyPlugin extends Plugin {
 
   constructor(app: App, manifest: PluginManifest) {
     super(app, manifest);
+    // Resolve the dependency container and attach relevant things to the Plugin.
 
-    const Action = Actional(app);
-    this.modal = Modalal(app);
-    Action.fromId('daily-notes');
-    this.vault = Vault(app);
+    // const Action = Actional(app);
+    // this.modal = Modalal(app);
+    // Action.fromId('daily-notes');
+    // this.vault = Vault(app);Gen
   }
 
 	async onload() {
 		await this.loadSettings();
 
-        // Finds all files for People...
-        // We now need to convert this to an Object that we can display and search
-        // Ideally this needs to be the path to the person
-        // If the person doesn't exist... create for them?
 
         // TODO: Configuration Options
           // Meeting Template Location
@@ -49,16 +42,14 @@ export default class MyPlugin extends Plugin {
                 // Same folder as current note.
                 // Folder called "xxx" in current note.
                 // The folder mentioned below.
-        console.log(this.vault.getFilesWithTag("person"));
+        // console.log(this.vault.getFilesWithTag("person"));
 
 		// This creates an icon in the left ribbon.
-		const ribbonIconEl = this.addRibbonIcon('dice', 'Sample Plugin', (evt: MouseEvent) => {
+		this.addRibbonIcon('dice', 'Sample Plugin', (evt: MouseEvent) => {
 			// Called when the user clicks the icon.
-        this.modal.Open(Component);
-            new Notice('This is a notice!');
-        });
-		// Perform additional things with the ribbon
-		ribbonIconEl.addClass('my-plugin-ribbon-class');
+      // this.modal.Open(Component);
+      new Notice('This is a notice!');
+    });
 
 		// This adds a status bar item to the bottom of the app. Does not work on mobile apps.
 		const statusBarItemEl = this.addStatusBarItem();
