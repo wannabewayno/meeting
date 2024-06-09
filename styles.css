@@ -7,9 +7,14 @@ If your plugin does not need CSS, delete this file.
 
 */
 
+.setting-item-info {
+  width: 100%;
+  flex: 1 1.5 auto;
+}
 
 .setting-item-control {
   position: relative;
+  width: 100%;
 
   .search-input-container, input {
     width: 100%;
