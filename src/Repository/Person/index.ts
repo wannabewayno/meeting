@@ -14,16 +14,20 @@ interface Dependencies extends RepositoryDependencies {
 }
 
 export default ({ Note: NoteRepository, Entities: { Person } }: Dependencies) => {
-  const noteToPerson = (note: INote): IPerson => new Person(note.basename);
+  const noteToPerson = (note: INote): IPerson => {
+    console.log(note);
+    return new Person(note.basename)
+  };
 
   class PersonRepository implements IPersonRepository {
     findByNames(...names: string[]): IPerson[] {
       // We need to Effectively find out where they're saved to disk and fetch them by Path.
       // TODO: Pull this from the Config
-      const personDirectory = 'Leaves';
+      const personDirectory = '';
 
       // People are Saved to Disk via their names;
-      const filepaths = names.map(name => `${personDirectory}/${name}`);
+      const filepaths = names.map(name => [personDirectory,  `${name}.md`].filter(Boolean).join('/'))
+      console.log({ filepaths });
 
       return NoteRepository.findFilesByPaths(...filepaths).map(noteToPerson);
     }
@@ -34,6 +38,8 @@ export default ({ Note: NoteRepository, Entities: { Person } }: Dependencies) =>
     }
 
     save(person: IPerson): void {
+      // You would need to know how to Serialize this to a Note.
+      // Say PersonToNote...
       // NoteRepository.save(person);
     }
 

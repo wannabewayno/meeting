@@ -15,7 +15,7 @@ export interface Dependencies {
 export default (dependencies: Dependencies) => {
   const Entities = EntitiesProvider();
   const Repository = RepositoryProvider({ Entities, ...dependencies });
-  const Service = ServiceProvider({ Repository });
+  const Service = ServiceProvider({ Repository, ...dependencies });
   const Action = ActionProvider(Service)
 
   return Action;

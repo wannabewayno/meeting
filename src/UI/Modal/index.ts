@@ -1,13 +1,17 @@
 import { App, Modal as ObsidianModal } from "obsidian";
 
-export type IModal =  ObsidianModal;
 export type ClosableUI = (html: HTMLElement, closeModal?: () => void) => any;
+export type IModal = ObsidianModal;
+export interface IModalConstructor {
+  new(ui: ClosableUI): IModal;
+  Open(ui: ClosableUI, title?: string): IModal;
+}
 
-export default (app: App) => class Modal extends ObsidianModal implements IModal {
+export default ({ App }: { App: App }): IModalConstructor => class Modal extends ObsidianModal implements IModal {
   private ui: ClosableUI
 
   constructor(ui: ClosableUI) {
-    super(app);
+    super(App);
     this.ui = ui;
   }
 

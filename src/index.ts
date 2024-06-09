@@ -1,13 +1,13 @@
-import { App, Editor, MarkdownView, Notice, Plugin, PluginManifest, PluginSettingTab, Setting } from 'obsidian';
+import { App, Editor, MarkdownView, Notice, Plugin, PluginManifest } from 'obsidian';
 import Container, { IContainer } from './Container';
-import { CreateMeetingForm } from './UI/Form/CreateMeeting';
+// import { CreateMeetingForm } from './UI/Form/CreateMeeting';
 import { CreateMeetingData, CreateMeetingUI } from './UI/Component/CreateMeetingUI';
 import { Settings } from './UI/Settings';
-import Modal from './UI/Modal';
+// import Modal from './UI/Modal';
 
-const createMeetingForm = CreateMeetingForm((data) => {
-	console.log('Submitting Form', data);
-});
+// const createMeetingForm = CreateMeetingForm((data) => {
+// 	console.log('Submitting Form', data);
+// });
 
 // Define Settings Here.
 // TODO: Configuration Options
@@ -43,15 +43,15 @@ export default class MyPlugin extends Plugin {
 	async onload() {
 		const settings = new Settings<CreateMeetingData>(this, CreateMeetingUI);
 		await settings.register();
-		const modal = Modal(this.app);
-
-		this.container.CreateMeeting();
 
 		// This creates an icon in the left ribbon.
 		this.addRibbonIcon('dice', 'Sample Plugin', (evt: MouseEvent) => {
-			modal.Open(createMeetingForm, "New Meeting");
-            new Notice('This is a notice!');
-        });
+      this.container.CreateMeeting();
+    });
+
+		this.addRibbonIcon('contact', 'Log People to Console', (evt: MouseEvent) => {
+      this.container.FindAllPeople();
+    });
 
 		// This adds a status bar item to the bottom of the app. Does not work on mobile apps.
 		const statusBarItemEl = this.addStatusBarItem();
