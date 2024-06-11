@@ -12,10 +12,11 @@ export class Settings<T extends Record<string, any>> extends PluginSettingTab {
     ui?: UIComponent<T>;
     UI: typeof UIComponent<T>;
 
-    constructor(plugin: IPlugin<T>, UI: typeof UIComponent<T>) {
+    constructor(plugin: IPlugin<T>, UI: typeof UIComponent<T>, defaults: T) {
         super(plugin.app, plugin);
         this.plugin = plugin;
         this.UI = UI;
+        this.plugin.settings = new Data<T>(defaults) as unknown as T;
     }
 
     /**
@@ -57,12 +58,12 @@ export class Settings<T extends Record<string, any>> extends PluginSettingTab {
 
 	async load() {
 		// Load settings from Disk and wrap in our Data proxy
-		const data = new Data<T>((await this.plugin.loadData() || {}));
+		const data = (await this.plugin.loadData()|| {}) as T;
 
         // Use the Data proxy's event emitter ability to react to changes when the data is updated by debouncing a call to 'save' back to the disk
-        data.on('change', Debouncer(() => this.save()));
+        this.plugin.settings.on('change', Debouncer(() => this.save()));
 
         // Finally assign this to settings so the rest of the application can use it.
-        this.plugin.settings = data as unknown as T; // <--- Assert the type because of some proxy magic
+        Object.assign(this.plugin.settings, data); // <--- Assert the type because of some proxy magic
 	}
 }

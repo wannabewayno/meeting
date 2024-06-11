@@ -1,57 +1,39 @@
 import { App, Editor, MarkdownView, Notice, Plugin, PluginManifest } from 'obsidian';
-import Container, { IContainer } from './Container';
-// import { CreateMeetingForm } from './UI/Form/CreateMeeting';
-import { CreateMeetingData, CreateMeetingUI } from './UI/Component/CreateMeetingUI';
+import Container, { IContainer, ISettings, SettingsUI } from './Container';
 import { Settings } from './UI/Settings';
-// import Modal from './UI/Modal';
-
-// const createMeetingForm = CreateMeetingForm((data) => {
-// 	console.log('Submitting Form', data);
-// });
-
-// Define Settings Here.
-// TODO: Configuration Options
-	// Meeting Template Location
-	// Meeting Dir (to place notes)
-	// Dropdown
-		// Same folder as current note.
-		// Folder called "xxx" in current note.
-		// The folder mentioned below.
-	// Contact Tag (person)
-	// Contact Dir
-	// Dropdown
-		// Same folder as current note.
-		// Folder called "xxx" in current note.
-		// The folder mentioned below.
-// console.log(this.vault.getFilesWithTag("person"));
-
-// const DEFAULT_SETTINGS: MyPluginSettings = {
-// 	mySetting: 'default'
-// }
 
 export default class MyPlugin extends Plugin {
-  settings: CreateMeetingData;
+  settings: ISettings;
+  _settings: Settings<ISettings>;
   protected container: IContainer;
 
   constructor(app: App, manifest: PluginManifest) {
     super(app, manifest);
-	// TODO: Build the container from the app...
-	// It will contain the Plugin, the App and our Settings/Config
-	this.container = Container({ App: this.app });
+	this._settings = new Settings<ISettings>(this, SettingsUI, {
+		meetingDirectory: 'meetings',
+		meetingTag: 'meeting',
+		personDirectory: 'people',
+		personTag: 'person',
+		recordAudio: true,
+		backlinkToDailyNotes: true,
+	});
+	this.container = Container(this);
+
+	// That is an annoying price to pay for something we can solve further up the chain.
+	// What if new Settings returns this for us? And we can load/unload into it as we want.
   }
 
 	async onload() {
-		const settings = new Settings<CreateMeetingData>(this, CreateMeetingUI);
-		await settings.register();
+		await this._settings.register();
 
 		// This creates an icon in the left ribbon.
 		this.addRibbonIcon('dice', 'Sample Plugin', (evt: MouseEvent) => {
-      this.container.CreateMeeting();
-    });
+			this.container.CreateMeeting();
+		});
 
 		this.addRibbonIcon('contact', 'Log People to Console', (evt: MouseEvent) => {
-      this.container.FindAllPeople();
-    });
+			this.container.FindAllPeople();
+		});
 
 		// This adds a status bar item to the bottom of the app. Does not work on mobile apps.
 		const statusBarItemEl = this.addStatusBarItem();

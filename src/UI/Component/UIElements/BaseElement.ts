@@ -1,6 +1,6 @@
 import { Setting } from 'obsidian';
 import { UIComponent, UIEvents } from "..";
-import { capitalize } from '../../Services/Text';
+import { unCamelCase } from '../../Services/Text';
 import { EventEmitter } from 'stream';
 
 export interface UIElementOpts<T> {
@@ -37,7 +37,7 @@ export abstract class BaseElement<T> extends Setting implements EventEmitter {
     this.getState = getState;
     this.setState = this.useValidate(setState);
 
-    this.setName(capitalize(name).trim());
+    this.setName(unCamelCase(name.trim()));
     this.required = opts.required ?? false;
     this.valid = !this.required;
 

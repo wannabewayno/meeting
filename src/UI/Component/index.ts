@@ -1,6 +1,6 @@
 import { EventEmitter } from "stream";
 import type { UIValue, ID } from "../types";
-import { BaseElement, Input, InputList, Choice, Search, SearchList } from "./UIElements";
+import { BaseElement, Input, InputList, Choice, Search, SearchList, Switch } from "./UIElements";
 import { UIElementOpts, SearchableItem } from "./UIElements/types";
 
 export enum UIEvents {
@@ -77,6 +77,11 @@ export class UIComponent<T extends Record<string, any>> extends EventEmitter {
   }
   addSearchList<K extends keyof T = string>(name: K, loadData: () => SearchableItem<UIValue>[], opts?: UIElementOpts<ID[]>) {
     const el = new SearchList(this, name as string, loadData, opts);
+    this.addElement(el);
+    return el;
+  }
+  addSwitch<K extends keyof T = string>(name: K, opts?: UIElementOpts<boolean>) {
+    const el = new Switch(this, name as string, opts);
     this.addElement(el);
     return el;
   }

@@ -6,47 +6,58 @@ export interface IPersonRepository {
   findByNames: (...names: string[]) => IPerson[];
   findAll: () => IPerson[];
   save: (person: IPerson) => void;
-  create: (name: string) => IPerson;
+  create: (name: string) => Promise<IPerson>;
 }
 
 interface Dependencies extends RepositoryDependencies {
   Note: INoteRepository,
 }
 
-export default ({ Note: NoteRepository, Entities: { Person } }: Dependencies) => {
+export default ({ Note: NoteRepository, Entities: { Person }, Infrastructure: { Settings } }: Dependencies) => {
   const noteToPerson = (note: INote): IPerson => {
-    console.log(note);
-    return new Person(note.basename)
-  };
+    let link = note.basename;
+    if (Settings.personDirectory) link = `${Settings.personDirectory}/${note.basename}`
+    return new Person(note.basename, link);
+  }
+  // const PersonToNote
 
   class PersonRepository implements IPersonRepository {
     findByNames(...names: string[]): IPerson[] {
-      // We need to Effectively find out where they're saved to disk and fetch them by Path.
-      // TODO: Pull this from the Config
-      const personDirectory = '';
+      // Find out where people are saved to disk.
+      const { personDirectory  } = Settings;
 
-      // People are Saved to Disk via their names;
+      // People are Saved to disk like '{{Dir}}/{{name}}.md'
       const filepaths = names.map(name => [personDirectory,  `${name}.md`].filter(Boolean).join('/'))
-      console.log({ filepaths });
 
-      return NoteRepository.findFilesByPaths(...filepaths).map(noteToPerson);
+      return NoteRepository.findNotesByPaths(...filepaths).map(noteToPerson);
     }
 
     findAll(): IPerson[] {
-      // TODO: the PersonTag needs to come from the configuration settings :D
-      return NoteRepository.findFilesWithAnyTags('person').map(noteToPerson);
+      const { personTag } = Settings;
+      return NoteRepository.findNotesWithAnyTags(personTag).map(noteToPerson);
     }
 
     save(person: IPerson): void {
       // You would need to know how to Serialize this to a Note.
-      // Say PersonToNote...
-      // NoteRepository.save(person);
+      // Say personNote = PersonToNote(person);
+      // NoteRepository.save(personNote);
+      // we could call update or something without having to read/change/replace?
+      // No we most liekly would do that as we need to know how to change the document.
+      // This get's trickier...
+      // Headings would need specific structure... ugh...
+      /// Would need somekind of sanity check
     }
 
-    create(name: string): IPerson {
+    async create(name: string) {
+      // Prepare the path and metadata.
+      const { personTag, personDirectory } = Settings;
+      let path = `${name}.md`;
+      if (personDirectory) path = `${personDirectory}/${path}`;
+
       // Create a Person
-      const person = new Person(name);
-      // Save the person to disk?
+      const person = new Person(name, path);
+ 
+      await NoteRepository.createNote(path, person.toString(), { tags: [personTag] });
 
       // Return the Person
       return person;
