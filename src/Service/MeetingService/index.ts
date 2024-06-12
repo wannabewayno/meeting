@@ -21,6 +21,7 @@ export default ({ Obsidian, Repository, Infrastructure: { App, Settings } }: Mee
       const meeting = await Repository.Meeting.create(title, participants, agenda);
     
       // Backlink the meeting to our daily notes (if applicable)
+      // TODO: Create a DailyNotesService
       if (Settings.backlinkToDailyNotes && Obsidian.isDailyNotesEnabled()) {
         // TODO: Should really be meeting.start()
         const currentTime = window.moment().format('h:mma');
@@ -32,6 +33,7 @@ export default ({ Obsidian, Repository, Infrastructure: { App, Settings } }: Mee
       await this.openMeeting(meeting);
       
       // Start recording (if applicable).
+      // TODO: Create an AudioRecorder Service (best to de-couple from obsidian where possible)
       if (Settings.recordAudio && Obsidian.isAudioRecorderAvailable()) Obsidian.startRecording();
 
       // Set the Currently Active Meeting.
@@ -65,6 +67,21 @@ export default ({ Obsidian, Repository, Infrastructure: { App, Settings } }: Mee
 
       // Unset the active meeting.
       this.activeMeeting = undefined;
+
+      // Backlink the meeting to our daily notes (if applicable)
+      if (Settings.backlinkToDailyNotes && Obsidian.isDailyNotesEnabled()) {
+        // TODO: Should really be meeting.end
+        const currentTime = window.moment().format('h:mma');
+        /*
+          TODO: Find the backlink and insert the time after that.
+          Assumption: We're assuming that if we're in a meeting we won't be appending anything to our daily notes
+          until after the meeting has ended.
+          Hence it's safe to append the time as the only thing before this would be the backlink to the start the meeting.
+          However there is no garauntee that this is the case...
+        */
+        const backlink = `\n${currentTime}`;
+        await Obsidian.addToDailyNote(backlink);
+      }
 
       /*
         Initiate Post Meeting Actions like
