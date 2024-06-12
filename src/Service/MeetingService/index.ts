@@ -5,7 +5,7 @@ import { IObsidianService } from '../Obsidian';
 
 export interface IMeetingService {
   createMeeting: (title: string, participants: IPerson[], agenda?: string[]) => Promise<IMeeting>;
-  stopMeeting: (meeting: IMeeting) => Promise<void>;
+  stopMeeting: (meeting?: IMeeting) => Promise<void>;
 }
 
 interface MeetingServiceDependencies extends Dependencies {
@@ -14,22 +14,43 @@ interface MeetingServiceDependencies extends Dependencies {
 
 export default ({ Obsidian, Repository, Infrastructure: { App, Settings } }: MeetingServiceDependencies): IMeetingService => {
   class MeetingService implements IMeetingService {
+    private activeMeeting?: IMeeting
+
     async createMeeting(title: string, participants: IPerson[], agenda?: string[]): Promise<IMeeting> {
       // Create a meeting
       const meeting = await Repository.Meeting.create(title, participants, agenda);
     
-      // TODO: Backlink the meeting to our daily notes.
+      // Backlink the meeting to our daily notes (if applicable)
+      if (Settings.backlinkToDailyNotes && Obsidian.isDailyNotesEnabled()) {
+        // TODO: Should really be meeting.start()
+        const currentTime = window.moment().format('h:mma');
+        const backlink = `\n\n## Meeting\n${currentTime}\n${meeting.wikiLink}`;
+        await Obsidian.addToDailyNote(backlink);
+      }
       
       // Open the Meeting in the UI.
       await this.openMeeting(meeting);
       
       // Start recording (if applicable).
-      if (Settings.recordAudio) Obsidian.startRecording();
+      if (Settings.recordAudio && Obsidian.isAudioRecorderAvailable()) Obsidian.startRecording();
+
+      // Set the Currently Active Meeting.
+      this.activeMeeting = meeting;
 
       return meeting;
     }
 
-    async stopMeeting(meeting: IMeeting) {
+    /**
+     * Stops a Meeting.
+     * If no meeting is provided then we will attempt to use any active meeting.
+     * @param meeting 
+     */
+    async stopMeeting(meeting?: IMeeting) {
+      if (!meeting) {
+        if (!this.activeMeeting) return;
+        meeting = this.activeMeeting;
+      }
+
       // Open Meeting Note.
       this.openMeeting(meeting);
 
@@ -39,10 +60,18 @@ export default ({ Obsidian, Repository, Infrastructure: { App, Settings } }: Mee
       // Mark Meeting as Stopped and Save it.
       meeting.endedAt = new Date();
       
+      // TODO: Maybe I can record what's changed so I can produce a delta?
       await Repository.Meeting.save(meeting);
-      // Maybe I can record what's changed so I can produce a delta?
 
-      // TODO: Initiate Post Meeting Actions like Summarization, Action Items, Follow Up Questions.
+      // Unset the active meeting.
+      this.activeMeeting = undefined;
+
+      /*
+        Initiate Post Meeting Actions like
+        - Transcription.
+        - Summarization.
+        - Action Items.
+      */
     }
 
     /*

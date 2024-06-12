@@ -1,6 +1,10 @@
 import { Form, SubmitFn } from "./Form";
-import { CreateMeetingUI, CreateMeetingData } from "../Component/CreateMeetingUI";
+import { CICreateMeetingUI, CreateMeetingData } from "../Component/CreateMeetingUI";
 
-export function CreateMeetingForm(onSubmit: SubmitFn<CreateMeetingData>) {
-    return Form.Factory<CreateMeetingData>(CreateMeetingUI, onSubmit)
+export type CreateMeetingForm = (onSubmit: SubmitFn<CreateMeetingData>) => (html: HTMLElement, onSubmit?: () => void) => Form<CreateMeetingData>;
+
+export default (CreateMeetingUI: CICreateMeetingUI) => {
+    return function CreateMeetingForm(onSubmit: SubmitFn<CreateMeetingData>) {
+        return Form.Factory<CreateMeetingData>(CreateMeetingUI, onSubmit)
+    }
 }

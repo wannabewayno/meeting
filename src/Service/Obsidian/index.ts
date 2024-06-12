@@ -1,4 +1,4 @@
-import type { App as ObsidianApp } from "obsidian";
+import type { App as ObsidianApp, TFile } from "obsidian";
 import { Dependencies } from "..";
 
 interface Command {
@@ -21,55 +21,128 @@ interface Plugin {
     instance: PluginInstance
 }
 
+interface DailyNotesSettings {
+    format: string,
+    folder: string,
+    template: string,
+    autorun: boolean,
+}
+
 interface App extends ObsidianApp {
   commands: {
     commands: Record<string,any>;
     executeCommandById: (id: string) => void;
   }
   internalPlugins: {
-    config: Record<string, boolean>,
-    getPlugin: (pluginId: string) => any; 
+    config: Record<string, boolean>;
+    plugins: Record<string, Plugin>; 
   }
+}
+
+interface PollUntilOpts {
+    timeout?: number;
+    period?: number;
+}
+
+function pollUntil<T>(producer: () => T, { timeout = 3000, period = 10 }: PollUntilOpts = {}): Promise<NonNullable<T>> {
+    return new Promise(async (resolve, reject) => {
+        const start = Date.now();
+        while(true) {
+            // poll it until it shows up.
+            const value = producer(); 
+            if (value) {
+                resolve(value);
+                break;
+            } else if ((Date.now() - start) >= timeout) {
+                reject(new Error(`[pollUntil] Timeout of ${timeout} exceeded`));
+                break;
+            }
+            await sleep(period); // lil nap
+        }
+    });
 }
 
 export interface IObsidianService {
     executeCmd: (id: string) => void;
     startRecording: () => void;
     stopRecording: () => void;
-    getPlugin: (id: string) => void;
+    addToDailyNote: (content: string) => Promise<void>;
+    isDailyNotesEnabled: () => boolean;
+    isAudioRecorderAvailable: () => boolean;
 }
 
-const AudioRecorderStart = 'audio-recorder:start';
-const AudioRecorderEnd = 'audio-recorder:end';
+enum Plugins {
+    DAILY_NOTES = 'daily-notes',
+    AUDIO_RECORDER = 'audio-recorder',
+}
 
-export default ({ Infrastructure: { App: app } }: Dependencies): IObsidianService => {
-    const App = app as App
+export default ({ Repository, Infrastructure: { App: app } }: Dependencies): IObsidianService => {
+    const App = app as App;
+    const { commands, internalPlugins, vault } = App;
 
     class ObsidianService implements IObsidianService {
 
-        getPlugin() {
-            // console.log("getting plugins");
-            console.log(App.internalPlugins);
+        private getDailyNotesSettings(): DailyNotesSettings {
+            const dailyNotes = App.internalPlugins.plugins[Plugins.DAILY_NOTES];
 
-            // I need the Date Format and the File Location.
-            // By default it goes into the root
-            // By default the Date Format is YYYY-MM-DD (altough that's not states anywhere.)
+            const { format, folder, template, autorun } = dailyNotes.instance.options || {};
+            return {
+                format: format ?? 'YYYY-MM-DD',
+                folder: folder ?? '',
+                template: template ?? '',
+                autorun: autorun ?? false,
+            }
         }
 
-        async getCurrentDailyNote() {
-            console.log(App.internalPlugins);
+        private getDailyNotePath(): string {
+            const { folder, format } = this.getDailyNotesSettings();
+            const date = window.moment().format(format);
+            let dailyNotePath = `${date}.md`;
+            if (folder) dailyNotePath = `${folder}/${date}.md`;
+        
+            return dailyNotePath;
         }
 
-        async addToDailyNote() {
+        private getCurrentDailyNote(): TFile | null {
+            if (!this.isDailyNotesEnabled()) return null;
 
+            const todaysNote = this.getDailyNotePath();
+            return vault.getFileByPath(todaysNote);
+        }
+
+        /**
+         * This does exactly what "create daily notes does"
+         * However there's no official feedback from this...
+         * So I'm implementing it myself so that I have a fullproof solution.
+         */
+        async createTodaysDailyNote(): Promise<TFile> {
+            // Execute the command.
+            this.executeCmd('daily-notes');
+
+            // wait for this to show up.
+            return pollUntil<TFile|null>(() => this.getCurrentDailyNote(), { timeout: 3000 })
+        }
+
+        async addToDailyNote(content: string) {
+            // Not Enabled? No Worries
+            if (!this.isDailyNotesEnabled()) return;
+            let dailyNote = this.getCurrentDailyNote();
+
+            // Go Create the daily note if it's not already there.
+            if (!dailyNote) dailyNote = await this.createTodaysDailyNote();
+            await vault.append(dailyNote, content);
         }
 
         executeCmd(id: string) {
-            App.commands.executeCommandById(id);
+            commands.executeCommandById(id);
+        }
+
+        isDailyNotesEnabled() {
+            return Boolean(internalPlugins.config[Plugins.DAILY_NOTES])
         }
 
         isAudioRecorderAvailable(): boolean {
-            return Boolean(App.internalPlugins.config['audio-recorder']);
+            return Boolean(internalPlugins.config[Plugins.AUDIO_RECORDER]);
         }
 
         startRecording() {
@@ -81,17 +154,7 @@ export default ({ Infrastructure: { App: app } }: Dependencies): IObsidianServic
             if (!this.isAudioRecorderAvailable()) return;
             this.executeCmd('audio-recorder:stop');
         };
-
-        // I would need to integrate into the Daily Notes Plugin
-        // Find out if it's Available
-        // if it is... what it's settings are
-        // Should be in Obsidian Service.
-        // TODO: Find Daily Note Link
-        // TODO: Append to Daily Note File the current time and Meeting wikiLink
-        // How do I do this... ideally not service is the way to go here I think...
-        // Instead of a repository... where the repo can use the service?
-        // daily note service?
     }
 
     return new ObsidianService();
-}
+} 

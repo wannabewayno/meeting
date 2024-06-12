@@ -1,96 +1,132 @@
-# Obsidian Sample Plugin
+# Meeting
+A plugin that helps you wrangle your meetings together.
+![demo](./assets/demo.gif)
 
-This is a sample plugin for Obsidian (https://obsidian.md).
+It exports commands that streamlines creating notes to capture meeting information and attendance.
 
-This project uses Typescript to provide type checking and documentation.
-The repo depends on the latest plugin API (obsidian.d.ts) in Typescript Definition format, which contains TSDoc comments describing what it does.
+## Key Features
+- Quickly create a meeting note with Title, Agenda, Participants
+- Search functionality for Selecting Participants
+- Backlink reference to meeting in your daily notes
+- Use built-in audio-recorder to record the meeting
+- Timestamped start and stop dates
+- Automatically insert new notes for meeting participants if they do not exist in your vault.
+- Customisable settings for different workflows.
 
-**Note:** The Obsidian API is still in early alpha and is subject to change at any time!
+## Installation
+### Obsidian Plugin store
+Not Available Yet 
 
-This sample plugin demonstrates some of the basic functionality the plugin API can do.
-- Adds a ribbon icon, which shows a Notice when clicked.
-- Adds a command "Open Sample Modal" which opens a Modal.
-- Adds a plugin setting tab to the settings page.
-- Registers a global click event and output 'click' to the console.
-- Registers a global interval which logs 'setInterval' to the console.
+### Via Install Script
+1. Clone down this repository to your local machine.
+  ```sh
+  git clone git@github.com:wannabewayno/AutoLinker.git && cd meeting
+  ```
 
-## First time developing plugins?
+2. Run the provided installer script.\
+  The first and only argument to the installer script will be the absolute directory of the vault you wish to add the plugin to.
 
-Quick starting guide for new plugin devs:
+  **Powershell:**
+  ```sh
+  ./install.ps1 /path/to/your/vault
+  ```
 
-- Check if [someone already developed a plugin for what you want](https://obsidian.md/plugins)! There might be an existing plugin similar enough that you can partner up with.
-- Make a copy of this repo as a template with the "Use this template" button (login to GitHub if you don't see it).
-- Clone your repo to a local development folder. For convenience, you can place this folder in your `.obsidian/plugins/your-plugin-name` folder.
-- Install NodeJS, then run `npm i` in the command line under your repo folder.
-- Run `npm run dev` to compile your plugin from `main.ts` to `main.js`.
-- Make changes to `main.ts` (or create new `.ts` files). Those changes should be automatically compiled into `main.js`.
-- Reload Obsidian to load the new version of your plugin.
-- Enable plugin in settings window.
-- For updates to the Obsidian API run `npm update` in the command line under your repo folder.
+  **Bash:**
+  ```sh
+  ./install.sh /path/to/your/vault
+  ```
+  *__Note:__ If you encounter a permission denied error, ensure the script is executable with `chmod +x ./install.sh`* 
 
-## Releasing new releases
+3. Refresh plugins to populate the list
+4. Enable the plugin.
 
-- Update your `manifest.json` with your new version number, such as `1.0.1`, and the minimum Obsidian version required for your latest release.
-- Update your `versions.json` file with `"new-plugin-version": "minimum-obsidian-version"` so older versions of Obsidian can download an older version of your plugin that's compatible.
-- Create new GitHub release using your new version number as the "Tag version". Use the exact version number, don't include a prefix `v`. See here for an example: https://github.com/obsidianmd/obsidian-sample-plugin/releases
-- Upload the files `manifest.json`, `main.js`, `styles.css` as binary attachments. Note: The manifest.json file must be in two places, first the root path of your repository and also in the release.
-- Publish the release.
+### Manually
+1. Clone down the repository.
+  ```sh
+  git clone git@github.com:wannabewayno/AutoLinker.git && cd meeting
+  ```
 
-> You can simplify the version bump process by running `npm version patch`, `npm version minor` or `npm version major` after updating `minAppVersion` manually in `manifest.json`.
-> The command will bump version in `manifest.json` and `package.json`, and add the entry for the new version to `versions.json`
+2. Build the Plugin.\
+  **Node**
+  ```sh
+  npm run build
+  ```
 
-## Adding your plugin to the community plugin list
+  **Bun**
+  ```sh
+  bun run build
+  ```
 
-- Check https://github.com/obsidianmd/obsidian-releases/blob/master/plugin-review.md
-- Publish an initial version.
-- Make sure you have a `README.md` file in the root of your repo.
-- Make a pull request at https://github.com/obsidianmd/obsidian-releases to add your plugin.
+3. Export your vault path for later reference
+  1. First extract the pluginId from the manifest.
+    ```sh
+    export PluginId="$(jq -r '.id' ./manifest.json)"
+    ```
+  2. export the plugin dir
+    ```sh
+    export PluginDir="$VaultDir/.obsidian/plugins/$PluginId"
+    ```
 
-## How to use
+4. Create the plugin directory in your target vault
+  ```sh
+  mkdir -p $PluginDir
+  ```
 
-- Clone this repo.
-- Make sure your NodeJS is at least v16 (`node --version`).
-- `npm i` or `yarn` to install dependencies.
-- `npm run dev` to start compilation in watch mode.
+5. Move the necessary plugin files to your vault's plugin folder.
+  ```sh
+  cp ./{main.js,styles.css,manifest.json} $PluginDir
+  ```
 
-## Manually installing the plugin
+6. Refresh plugins to populate the list
+7. Enable the plugin.
 
-- Copy over `main.js`, `styles.css`, `manifest.json` to your vault `VaultFolder/.obsidian/plugins/your-plugin-id/`.
+## Testing
+There are no tests at this point in time.
 
-## Improve code quality with eslint (optional)
-- [ESLint](https://eslint.org/) is a tool that analyzes your code to quickly find problems. You can run ESLint against your plugin to find common bugs and ways to improve your code. 
-- To use eslint with this project, make sure to install eslint from terminal:
-  - `npm install -g eslint`
-- To use eslint to analyze this project use this command:
-  - `eslint main.ts`
-  - eslint will then create a report with suggestions for code improvement by file and line number.
-- If your source code is in a folder, such as `src`, you can use eslint with this command to analyze all files in that folder:
-  - `eslint .\src\`
+## Usage
+This plugin exports two commands.
+1. Create Meeting `meeting:create`
+2. Stop meeting `meeting:stop`
 
-## Funding URL
+Bind hot keys to these or use the command palette to interact with them.
 
-You can include funding URLs where people who use your plugin can financially support it.
+### Creating a Meeting
+Initiate this command to open a modal that prompts you for
+- Title
+- Participants
+- Agenda (optional)
 
-The simple way is to set the `fundingUrl` field to your link in your `manifest.json` file:
+Hit ok:
+- A new note will be created
+- A backlink to the note will be added to the active daily note
+- The Audio Recorder will be started
+- Flags this meeting as an active meeting
+- Timestamps the meeting as active.
 
-```json
-{
-    "fundingUrl": "https://buymeacoffee.com"
-}
-```
+Take notes and when you're done, use the [StopMeeting](#stopping-a-meeting) command
 
-If you have multiple URLs, you can also do:
+### Stopping a Meeting
+Stops the active meeting by:
+1. Opening the meeting
+2. Stop recording and backlink recording to the meeting
+3. Unflags the meeting as being active
+4. timestamp the meeting as finished.
 
-```json
-{
-    "fundingUrl": {
-        "Buy Me a Coffee": "https://buymeacoffee.com",
-        "GitHub Sponsor": "https://github.com/sponsors",
-        "Patreon": "https://www.patreon.com/"
-    }
-}
-```
+## Known Issues
+None at this stage.
 
-## API Documentation
 
-See https://github.com/obsidianmd/obsidian-api
+## Road Map
+This is already a fairly complex plugin however it is very extensible.
+Future considerations will show up here at a high-level.
+
+Please [contact us](#contact) if you want to contribute or have an idea, it might be something we also might like to incorporate.
+
+## Contact
+Wayne Griffiths
+
+
+## Developing
+For an integrated development environment when developing an Obsidian plugin, you can open a test vault with this plugin in it and install the hotrealod plugin provided by Obsidian that reloads plugins when they change, couple that with typescript watcher that rebuilds the bundle whenever code changes and you will have live reloading.
+
+Exact steps for this need to be added...

@@ -5,8 +5,11 @@ import ServiceProvider from 'src/Service';
 import ActionProvider, { IAction } from 'src/Action';
 import { IPlugin } from 'src/UI/Settings';
 import { UIComponent } from 'src/UI/Component';
+import CreateMeetingProvider from 'src/UI/Form/CreateMeeting';
+import CreateMeetingUIProvider from 'src/UI/Component/CreateMeetingUI';
 
 export type IContainer = IAction;
+
 export interface Dependencies {
   App: App
 }
@@ -23,7 +26,6 @@ export interface ISettings {
 export class SettingsUI extends UIComponent<ISettings> {
   constructor(html: HTMLElement) {
     super(html);
-
     this.addInput('meetingDirectory', { description: 'The directory where meeting notes are placed' });
     this.addInput('meetingTag', { description: 'The tag that identifies a meeting note' });
     this.addInput('personDirectory', { description: 'The directory where new people notes are placed' });
@@ -46,7 +48,9 @@ export default (plugin: IPlugin<ISettings>) => {
   const Entities = EntitiesProvider();
   const Repository = RepositoryProvider({ Entities, Infrastructure });
   const Service = ServiceProvider({ Repository, Infrastructure });
-  const Action = ActionProvider(Service)
+  const CreateMeetingUI = CreateMeetingUIProvider(Service);
+  const CreateMeetingForm = CreateMeetingProvider(CreateMeetingUI);
+  const Action = ActionProvider({ CreateMeetingForm, Service });
 
   return Action;
 }
