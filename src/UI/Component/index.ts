@@ -55,32 +55,32 @@ export class UIComponent<T extends Record<string, any>> extends EventEmitter {
     return this;
   }
 
-  addInput<K extends keyof T = string>(name: K, opts?: UIElementOpts<T[K]>) {
+  addInput<K extends keyof T = string>(name: K, opts?: UIElementOpts<T[K]>): Input {
     const el = new Input(this, name as string, opts);
     this.addElement(el);
     return el;
   }
-  addInputList<K extends keyof T = string>(name: K, opts?: UIElementOpts<string[]>) {
+  addInputList<K extends keyof T = string>(name: K, opts?: UIElementOpts<string[]>): InputList {
     const el = new InputList(this, name as string, opts);
     this.addElement(el);
     return el;
   }
-  addChoice<K extends keyof T = string>(name: K, loadData: () => UIValue[], opts?: UIElementOpts<string>) {
+  addChoice<K extends keyof T = string>(name: K, loadData: () => UIValue[], opts?: UIElementOpts<string>): Choice {
     const el = new Choice(this, name as string, loadData, opts);
     this.addElement(el);
     return el;
   }
-  addSearch<K extends keyof T = string>(name: K, loadData: () => SearchableItem<UIValue>[], opts?: UIElementOpts<ID>) {
+  addSearch<K extends keyof T = string>(name: K, loadData: () => SearchableItem<UIValue>[], opts?: UIElementOpts<ID>): Search {
     const el = new Search(this, name as string, loadData, opts);
     this.addElement(el);
     return el;
   }
-  addSearchList<K extends keyof T = string>(name: K, loadData: () => SearchableItem<UIValue>[], opts?: UIElementOpts<ID[]>) {
+  addSearchList<K extends keyof T = string>(name: K, loadData: () => SearchableItem<UIValue>[], opts?: UIElementOpts<ID[]>): SearchList {
     const el = new SearchList(this, name as string, loadData, opts);
     this.addElement(el);
     return el;
   }
-  addSwitch<K extends keyof T = string>(name: K, opts?: UIElementOpts<boolean>) {
+  addSwitch<K extends keyof T = string>(name: K, opts?: UIElementOpts<boolean>): Switch {
     const el = new Switch(this, name as string, opts);
     this.addElement(el);
     return el;

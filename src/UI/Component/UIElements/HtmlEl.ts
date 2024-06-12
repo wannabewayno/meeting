@@ -56,29 +56,35 @@ function findPreviousFocusableSibling(element: HTMLElement) {
 }
 
 export function SearchContainer(html: HTMLElement, onSelect: (item: UIValue) => void) {
-    const resultContainer = html.createEl('ul','search-results-container');
-  
-    class SearchResult {
-      constructor(result: UIValue) {
-        const container = resultContainer.createEl('li','search-result');
-  
-        // Make the SearchResult items focus-able with the keyboard
-        container.tabIndex = 0;
-  
-        if (result.image) container.createEl('img', 'search-image');
-  
-        container.createSpan('search-text').appendText(result.name);
-        
-        // Allows Clicking on List item to add select it.
-        container.onClickEvent(() => onSelect(result));
-        // Allows hitting Enter via keyboard navigation to select it.
-        container.on('keypress', 'li', (event: KeyboardEvent) => event.code === ENTER && onSelect(result))
-      }
-  
-      static empty() {
-        resultContainer.empty();
-      }
+  const resultContainer = html.createEl('ul','search-results-container');
+
+  class SearchResult {
+    constructor(result: UIValue) {
+      const container = resultContainer.createEl('li','search-result');
+
+      // Make the SearchResult items focus-able with the keyboard
+      container.tabIndex = 0;
+
+      if (result.image) container.createEl('img', 'search-image');
+
+      container.createSpan('search-text').appendText(result.name);
+      
+      // Allows Clicking on List item to add select it.
+      container.onClickEvent(() => onSelect(result));
+      // Allows hitting Enter via keyboard navigation to select it.
+      container.on('keypress', 'li', (event: KeyboardEvent) => event.code === ENTER && onSelect(result))
     }
-  
-    return SearchResult;
+
+    static empty() {
+      resultContainer.empty();
+    }
+
+    static clickFirstElement() {
+      const firstChild = resultContainer.firstElementChild;
+      if (!firstChild) return;
+      (firstChild as HTMLElement).click();
+    }
+  }
+
+  return SearchResult;
 }

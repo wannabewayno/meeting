@@ -51,7 +51,7 @@ function pollUntil<T>(producer: () => T, { timeout = 3000, period = 10 }: PollUn
             // poll it until it shows up.
             const value = producer(); 
             if (value) {
-                resolve(value);
+                resolve(value as NonNullable<T>);
                 break;
             } else if ((Date.now() - start) >= timeout) {
                 reject(new Error(`[pollUntil] Timeout of ${timeout} exceeded`));

@@ -42,6 +42,9 @@ abstract class BaseSearch<T> extends BaseElement<T> {
           if (!results.length) results.push({ match: { matches:[], score: 0 }, item: { id: value, name: `New: ${value}` } });
           results.map(({ item }) => new SearchResult(item));
         });
+
+        // Hitting "Enter" on the input will just add the first highlighted item in the array.
+        this.onEnter(search.inputEl, () => SearchResult.clickFirstElement());
       });
     }
   
