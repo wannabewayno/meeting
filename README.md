@@ -15,12 +15,15 @@ It exports commands that streamlines creating notes to capture meeting informati
 
 ## Installation
 ### Obsidian Plugin store
-Not Available Yet 
+Not Available Yet
+
+### Via GitHub Releases
+
 
 ### Via Install Script
 1. Clone down this repository to your local machine.
   ```sh
-  git clone git@github.com:wannabewayno/AutoLinker.git && cd meeting
+  git clone git@github.com:wannabewayno/meeting.git && cd meeting
   ```
 
 2. Run the provided installer script.\
@@ -43,10 +46,10 @@ Not Available Yet
 ### Manually
 1. Clone down the repository.
   ```sh
-  git clone git@github.com:wannabewayno/AutoLinker.git && cd meeting
+  git clone git@github.com:wannabewayno/meeting.git && cd meeting
   ```
 
-2. Build the Plugin.\
+2. Build the Plugin.
   **Node**
   ```sh
   npm run build
@@ -59,23 +62,24 @@ Not Available Yet
 
 3. Export your vault path for later reference
   1. First extract the pluginId from the manifest.
-    ```sh
-    export PluginId="$(jq -r '.id' ./manifest.json)"
-    ```
+  ```sh
+  export PluginId="$(jq -r '.id' ./manifest.json)"
+  ```
+  
   2. export the plugin dir
-    ```sh
-    export PluginDir="$VaultDir/.obsidian/plugins/$PluginId"
-    ```
+  ```sh
+  export PluginDir="$VaultDir/.obsidian/plugins/$PluginId"
+  ```
 
 4. Create the plugin directory in your target vault
-  ```sh
-  mkdir -p $PluginDir
-  ```
+```sh
+mkdir -p "$PluginDir"
+```
 
 5. Move the necessary plugin files to your vault's plugin folder.
-  ```sh
-  cp ./{main.js,styles.css,manifest.json} $PluginDir
-  ```
+```sh
+cp main.js styles.css manifest.json "$PluginDir/"
+```
 
 6. Refresh plugins to populate the list
 7. Enable the plugin.
